@@ -120,6 +120,8 @@
 
                         if ($tds.filter('.show').not('i').length + gameData.n == gameData.all) {
                             let t = (Date.now() - gameData.t) / 1000
+                            $tds.not('.show').attr('class','show');
+                            showBooms()
                             setTimeout(() => {
                                 alert('恭喜通关，用时' + t + 's');
                             }, 200);
@@ -231,6 +233,7 @@
                 let data = {};
                 let randomArr = getDiffRandom(0, h * w - 1, n);
 
+                data.booms = randomArr;
                 for (let val of randomArr) {
                     data[val] = 'boom';
 
@@ -245,6 +248,12 @@
                 }
 
                 return data
+            }
+
+            function showBooms() {
+                for(let i of gameData.booms) {
+                    $tds.eq(i).html('<i class="iconfont icon-boom"></i>')
+                }
             }
 
             //获取某格四周单元格下标
