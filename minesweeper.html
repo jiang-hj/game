@@ -122,6 +122,7 @@
                             let t = (Date.now() - gameData.t) / 1000
                             $tds.not('.show').attr('class','show');
                             showBooms()
+                            $('.boom-curr').text(0);
                             setTimeout(() => {
                                 alert('恭喜通关，用时' + t + 's');
                             }, 200);
