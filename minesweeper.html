@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="js/jquery-1.12.4.js"></script>
+    <link rel="stylesheet" href="http://at.alicdn.com/t/font_1034020_6g7vsvtro0b.css">
+    <style>
+        .game-ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .game-ul::after {
+            content: '';
+            display: block;
+            clear: both;
+            margin: 0 auto 20px;
+        }
+
+        .game-ul li {
+            float: left;
+            width: 30px;
+            height: 30px;
+            box-sizing: border-box;
+            border: 1px solid #999;
+            background-color: #bbb;
+            color: rgba(55, 55, 55, 0);
+            transition: color 1s, background-color 1s;
+            text-align: center;
+            line-height: 28px;
+        }
+
+        table {
+            border-collapse: collapse
+        }
+
+        td {
+            width: 30px;
+            height: 30px;
+            box-sizing: border-box;            
+            padding: 0;
+            font-size: 16px;
+            line-height: 28px;
+            text-align: center;
+            border: 1px solid #555;
+            background-color: #bbb;
+            color: rgba(55, 55, 55, 0);
+            transition: color .2s, background-color .2s;
+        }
+
+        td.show {
+            color: #555;
+            background-color: #fff;
+        }
+
+        td.flag::after {
+            content: 'o';
+            color: #555;
+        }
+
+        input[type="number"] {
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-wrap">
+        <!-- <ul class="game-ul">
+            <li><i class="iconfont icon-boom"></i></li>
+        </ul> -->
+        <p>
+            地雷数： 总
+            <span class="boom-all"></span>
+            剩余
+            <span class="boom-curr"></span>
+        </p>
+        <table class="b-table">
+            <tr>
+                <td><i class="iconfont icon-boom"></i></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="flag"></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <p>
+            <label>
+                高：
+                <input class="inp-h" type="number" step="10" placeholder="10的整数倍">
+            </label>
+            <label>
+                宽：
+                <input class="inp-w" type="number" step="10" placeholder="10的整数倍">
+            </label>
+            <button class="btn">开始游戏</button>
+        </p>
+    </div>
+
+    <script>
+        $(function () {            
+
+            //gameData
+            let gameData = null;
+            let $inpW = $('.inp-w');
+            let $inpH = $('.inp-h');
+            let $tds;
+            // let beginTime;
+
+            $inpH.val(10);
+            $inpW.val(10);
+            beginGame();
+
+            //开始游戏按钮
+            $('.btn').click(beginGame)
+
+            function addTdClick() {
+                //左键点击
+                $(document).on('click', 'td', function (e) {
+                    if (e.which === 1) {
+                        // $(this).not('.flag').addClass('show')
+                        let index = $(this).attr('index');
+                        // console.log(index)
+                        showTd(index)
+
+                        if($tds.filter('.show').not('i').length + gameData.n == gameData.all) {
+                            let t = (Date.now() - gameData.t) / 1000
+                            setTimeout(() => {
+                                alert('恭喜通关，用时' + t + 's');
+                            }, 200);
+                        }
+                    }
+                })
+
+                //右键标记
+                $(document).on('contextmenu', 'td', function (e) {
+                    e.preventDefault();
+                    $(this).toggleClass('flag')
+                    let len = $('.flag').length;
+                    let num = $('.boom-all').text();
+                    $('.boom-curr').text(num - len)
+                })
+            }
+
+            //显示单元格
+            function showTd(index) {
+                //下标错误返回；做保险
+                if($tds.eq(index).length === 0) {
+                    return;
+                }
+
+                if ($tds.eq(index).hasClass('show')) {
+                    return
+                }
+
+                let val = gameData[index];
+                if (val) {
+                    if (val === 'boom') {
+                        $tds.eq(index).html('<i class="iconfont icon-boom"></i>');
+                        $tds.eq(index).addClass('show');
+
+                        setTimeout(() => {
+                            alert('游戏结束');
+                            beginGame();
+                        }, 500)
+
+                        return;
+                    } else {
+                        $tds.eq(index).text(val);
+                        $tds.eq(index).addClass('show');
+                        return
+                    }
+                }
+
+                $tds.eq(index).addClass('show');
+                let aroundArr = getAround(gameData.w,gameData.h,index);
+                //递归
+                console.log(aroundArr)
+                for(let index of aroundArr) {
+                    showTd(index)
+                    // console.log(index)
+                }
+            }
+
+            //开始游戏
+            function beginGame() {
+                //清除单击事件
+                $(document).off();
+                //校验
+                let w = $inpW.val(),
+                    h = $inpH.val();
+
+                let reg = /^[1-3]{1}0$/;
+
+                if (!reg.test(w) || !reg.test(h)) {
+                    alert('请输入0-30的整十数字');
+                    return
+                }
+
+                let n = w * h / 10
+
+                $('.boom-all').text(n)
+                $('.boom-curr').text(n)
+
+                //清空
+                let $tb = $('.b-table');
+                $tds = null;
+                $tb.empty();
+
+                let ind = 0
+
+                let html = ''
+                for (let i = 0; i < h; i++) {
+                    html += '<tr>';
+                    for (let j = 0; j < w; j++) {
+                        html += '<td index="' + ind + '"></td>';
+                        ind++;
+                    }
+                    html += '</tr>'
+                }
+
+                $tb.html(html);
+                $tds = $('td');
+
+                //绑定点击事件
+                addTdClick();
+
+                gameData = createData(w, h, n);
+                gameData.w = w;
+                gameData.h = h;
+                gameData.n = n;             //地雷数
+                gameData.all = w * h;    //总数
+                gameData.t = Date.now();    //开始时间戳
+                // console.log(gameData)
+            }
+
+            //创建游戏数据
+            function createData(w, h, n) {
+                let data = {};
+                let randomArr = getDiffRandom(0, h * w - 1, n);
+
+                // console.log(randomArr)
+
+                for (let val of randomArr) {
+                    data[val] = 'boom';
+
+                    //获取该格四周个字下标
+                    let aroundArr = getAround(w, h, val);
+
+                    for (let ind of aroundArr) {
+                        if (data[ind] !== 'boom') {
+                            data[ind] === undefined ? data[ind] = 1 : data[ind]++;
+                        }
+                    }
+                }
+
+                return data
+            }
+
+            //获取某格四周单元格下标
+            function getAround(w, h, index) {
+                let r = parseInt(index / w);
+                let c = index % w;
+                let arr = [];
+                for (let i = -1; i < 2; i++) {
+                    let tempR = r + i;
+                    if (tempR >= h || tempR < 0) {
+                        continue;
+                    }
+
+                    for (let j = -1; j < 2; j++) {
+                        let tempC = c + j;
+                        if (tempC >= w || tempC < 0) {
+                            continue;
+                        }
+                        arr.push(tempR * w + tempC);
+                    }
+                }
+
+                return arr;
+            }
+
+            //取不同随机数
+            function getDiffRandom(min, max, num) {
+                min = parseInt(min);
+                max = parseInt(max);
+                num = parseInt(num)
+                let i = 0;
+
+                if (min > max) {
+                    [min, max] = [max, min]
+                }
+
+                if ((max - min + 1) < num) {
+                    return 'erro'
+                }
+
+                if (num / (max - min) < 0.1 && num < 10000) {
+                    return randomArr(min, max, num);
+                }
+
+                if (max - min > 1000000) {
+                    return '计算量太大'
+                }
+
+                return sortArr(min, max, num)
+
+
+                //通过排序取随机数，
+                function sortArr(min, max, num) {
+                    let tem = [];
+                    for (let i = min; i <= max; i++) {
+                        tem[tem.length] = i;
+                    }
+                    tem.sort(function (a, b) {
+                        return (Math.random() - 0.5)
+                    })
+
+                    return tem.slice(0, num)
+                }
+
+
+                //所取数字比较稀松,且所取数量较少时有优势
+                function randomArr(min, max, num) {
+                    let arr = [];
+                    while (arr.length < num) {
+                        let ran = +((Math.random() * (max - min)).toFixed(0)) + min;
+                        if (arr.indexOf(ran) === -1) {
+                            arr.push(ran)
+                        }
+                    }
+                    return arr
+                }
+            }
+
+
+
+
+        })
+    </script>
+</body>
+
+</html>
