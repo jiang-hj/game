@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <script src="js/jquery-1.12.4.js"></script>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
     <link rel="stylesheet" href="http://at.alicdn.com/t/font_1034020_6g7vsvtro0b.css">
     <style>
         .game-ul {
@@ -78,7 +78,7 @@
             <span class="boom-curr"></span>
         </p>
         <table class="b-table">
-            
+
         </table>
         <p>
             <label>
@@ -94,7 +94,7 @@
     </div>
 
     <script>
-        $(function () {            
+        $(function () {
 
             //gameData
             let gameData = null;
@@ -114,12 +114,10 @@
                 //左键点击
                 $(document).on('click', 'td', function (e) {
                     if (e.which === 1) {
-                        // $(this).not('.flag').addClass('show')
                         let index = $(this).attr('index');
-                        // console.log(index)
                         showTd(index)
 
-                        if($tds.filter('.show').not('i').length + gameData.n == gameData.all) {
+                        if ($tds.filter('.show').not('i').length + gameData.n == gameData.all) {
                             let t = (Date.now() - gameData.t) / 1000
                             setTimeout(() => {
                                 alert('恭喜通关，用时' + t + 's');
@@ -141,7 +139,7 @@
             //显示单元格
             function showTd(index) {
                 //下标错误返回；做保险
-                if($tds.eq(index).length === 0) {
+                if ($tds.eq(index).length === 0) {
                     return;
                 }
 
@@ -169,12 +167,10 @@
                 }
 
                 $tds.eq(index).addClass('show');
-                let aroundArr = getAround(gameData.w,gameData.h,index);
+                let aroundArr = getAround(gameData.w, gameData.h, index);
                 //递归
-                console.log(aroundArr)
-                for(let index of aroundArr) {
+                for (let index of aroundArr) {
                     showTd(index)
-                    // console.log(index)
                 }
             }
 
@@ -224,18 +220,15 @@
                 gameData = createData(w, h, n);
                 gameData.w = w;
                 gameData.h = h;
-                gameData.n = n;             //地雷数
-                gameData.all = w * h;    //总数
-                gameData.t = Date.now();    //开始时间戳
-                // console.log(gameData)
+                gameData.n = n; //地雷数
+                gameData.all = w * h; //总数
+                gameData.t = Date.now(); //开始时间戳
             }
 
             //创建游戏数据
             function createData(w, h, n) {
                 let data = {};
                 let randomArr = getDiffRandom(0, h * w - 1, n);
-
-                // console.log(randomArr)
 
                 for (let val of randomArr) {
                     data[val] = 'boom';
