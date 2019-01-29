@@ -133,7 +133,7 @@
                 //右键标记
                 $(document).on('contextmenu', 'td', function (e) {
                     e.preventDefault();
-                    $(this).toggleClass('flag')
+                    $(this).not('.show')toggleClass('flag')
                     let len = $('.flag').length;
                     let num = $('.boom-all').text();
                     $('.boom-curr').text(num - len)
